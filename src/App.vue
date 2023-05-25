@@ -2,7 +2,36 @@
   <div class="main">
     <div class="main-card">
       <h1>Тестовое задание CDNvideo</h1>
-      <video id="video" style="width: 100%" controls></video>
+      <div class="video-player" id="video-player">
+        <video id="video" style="width: 100%"></video>
+        <div class="video-controls">
+          <div id="play-control">
+            <img
+              src="./assets/controls/pause.svg"
+              width="20"
+              v-if="videoPlay"
+            />
+            <img src="./assets/controls/play.svg" width="20" v-else />
+          </div>
+          <div class="progress-control" style="width: 80%">
+            <span>{{ fancyTimeFormat(currentPosition) }}</span>
+            <input
+              style="width: 100%"
+              id="progress-bar"
+              type="range"
+              name=""
+              step="1"
+              :value="currentPosition"
+              @change="(event) => changeCurrentPosition(event)"
+              :max="mediaDuration"
+            />
+            <span>{{ fancyTimeFormat(mediaDuration) }}</span>
+          </div>
+          <div id="fullscreen-control">
+            <img src="./assets/controls/fullscreen.svg" width="16" />
+          </div>
+        </div>
+      </div>
       <div class="video-statistics">
         <div class="video-statistics-tabs">
           <div
@@ -32,10 +61,11 @@
 
         <div class="video-statistics-block" v-if="activeTab === 1">
           <p>
-            Current position: <span>{{ currentPosition }}</span>
+            Current position:
+            <span>{{ fancyTimeFormat(currentPosition) }}</span>
           </p>
           <p>
-            Media duration: <span>{{ mediaDuration }}</span>
+            Media duration: <span>{{ fancyTimeFormat(mediaDuration) }}</span>
           </p>
         </div>
 
@@ -83,7 +113,8 @@ const currentBitrate = ref();
 const videoUrl = ref();
 const activeTab = ref(0);
 
-
+const videoPlay = ref(false);
+const fullscreen = ref(false);
 
 const fancyTimeFormat = (duration) => {
   const hrs = ~~(duration / 3600);
@@ -127,7 +158,7 @@ onMounted(() => {
     });
 
     hls.on(Hls.Events.LEVEL_LOADED, function (event, data) {
-      mediaDuration.value = fancyTimeFormat(data.details.totalduration);
+      mediaDuration.value = data.details.totalduration;
       fragmentsAmount.value = data.details.fragments.length;
       videoUrl.value = data.details.url;
     });
@@ -135,8 +166,28 @@ onMounted(() => {
 
   video.addEventListener(
     'timeupdate',
-    () => (currentPosition.value = fancyTimeFormat(video.currentTime))
+    () => (currentPosition.value = video.currentTime)
   );
+
+  document.getElementById('play-control').addEventListener('click', () => {
+    videoPlay.value = !videoPlay.value;
+    videoPlay.value ? video.play() : video.pause();
+  });
+
+  document
+    .getElementById('fullscreen-control')
+    .addEventListener('click', () => {
+      fullscreen.value = !fullscreen.value;
+      fullscreen.value
+        ? document.getElementById('video-player').requestFullscreen()
+        : document.exitFullscreen();
+    });
+
+  document
+    .getElementById('progress-bar')
+    .addEventListener('change', (event) => {
+      video.currentTime = event.target.value;
+    });
 });
 </script>
 
@@ -192,5 +243,40 @@ onMounted(() => {
       font-weight: 600;
     }
   }
+}
+
+.video-player {
+  position: relative;
+
+  .video-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: absolute;
+    bottom: 0;
+    height: 40px;
+    padding: 0 20px;
+    width: 100%;
+    background: rgba($color: #dadada, $alpha: 0.7);
+
+    div {
+      cursor: pointer;
+    }
+  }
+}
+
+.video-player-fullscreen {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.progress-control{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 80%;
 }
 </style>
