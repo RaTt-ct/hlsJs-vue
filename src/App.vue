@@ -247,6 +247,7 @@ onMounted(() => {
 
 .video-player {
   position: relative;
+  width: 100%;
 
   .video-controls {
     display: flex;
@@ -258,22 +259,14 @@ onMounted(() => {
     padding: 0 20px;
     width: 100%;
     background: rgba($color: #dadada, $alpha: 0.7);
-
+    
     div {
       cursor: pointer;
     }
   }
 }
 
-.video-player-fullscreen {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-}
-
-.progress-control{
+.progress-control {
   display: flex;
   align-items: center;
   gap: 16px;
